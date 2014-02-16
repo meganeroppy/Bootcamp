@@ -24,6 +24,11 @@ class SoldierController extends MonoBehaviour
 	
 	static public var dead : boolean;
 	
+	///////////////////////////////////Added///////////////////////////////////////
+	private var AutoRunToItem : boolean = false;
+	private var targetItem : GameObject;
+	///////////////////////////////////////////////////////////////////////////////
+	
 	// Public variables hidden in inspector
 	
 	@HideInInspector
@@ -177,6 +182,20 @@ class SoldierController extends MonoBehaviour
 		if (delta > 180)
 			delta -= 360;
 		soldierTransform.localRotation.eulerAngles.y = Mathf.MoveTowards(currentAngle, currentAngle + delta, Time.deltaTime * maxRotationSpeed);
+		
+		//////////////////////////Added/////////////////////////////////////////
+		if(AutoRunToItem == true){
+			if(Mathf.Tan( parseFloat( this.transform.position.y - targetItem.transform.position.y)) <= 0.5f 
+			&& Mathf.Tan( parseFloat( this.transform.position.z - targetItem.transform.position.z)) <= 0.5f){
+				motor.inputMoveDirection = transform.TransformDirection(moveDir);
+				motor.inputJump = Input.GetButton("Jump") && !crouch;
+
+				AutoRunToItem = false;
+				targetItem.GetComponent.<Item>().PickedUp();
+			}
+		}
+		////////////////////////////////////////////////////////////////////////
+		
 	}
 	
 	function GetUserInputs()
@@ -215,10 +234,20 @@ class SoldierController extends MonoBehaviour
 			crouch = !crouch;
 			idleTimer = 0.0;
 		}
-		
-		crouch |= dead;
+				crouch = dead;
+
+		//crouch |= dead;
 		
 		//Check if the user wants the soldier to walk
 		walk = (!Input.GetKey(KeyCode.LeftShift) && !dead) || moveDir == Vector3.zero || crouch;
 	}
+	////////////////////Added//////////////////////////////
+	public function RunToItem(obj : GameObject){
+		targetItem = obj;
+		moveDir = Vector3(Mathf.Tan(this.transform.position.x - targetItem.transform.position.x), 0, Mathf.Tan(this.transform.position.z - targetItem.transform.position.z));
+		AutoRunToItem = true;
+	}
+	
+	/////////////////////////////////////////////////////////
+	
 }
